@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kalkulator Speed Up - Lords Mobile</title>
+<link rel="manifest" href="manifest.webmanifest">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 20px;
+      background-color: var(--bg);
+      color: var(--text);
+      transition: background 0.3s, color 0.3s;
+    }
+
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --card: #f8f8f8;
+    }
+
+    body.dark {
+      --bg: #1e1e1e;
+      --text: #f5f5f5;
+      --card: #2c2c2c;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: auto;
+      padding: 20px;
+      background: var(--card);
+      border-radius: 10px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.2);
+    }
+
+    h2 {
+      text-align: center;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      font-weight: bold;
+    }
+
+    input, button {
+      width: 100%;
+      padding: 10px;
+      margin-top: 5px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background: green;
+      color: white;
+      font-size: 16px;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: darkgreen;
+    }
+
+    .note {
+      display: block;
+      font-size: 12px;
+      color: gray;
+      margin-top: 4px;
+    }
+
+    .info-icon {
+      cursor: pointer;
+      font-size: 14px;
+      margin-left: 5px;
+    }
+
+    .info-box {
+      display: none;
+      margin-top: 8px;
+      padding: 8px;
+      background: #e9e9e9;
+      border-radius: 6px;
+      font-size: 13px;
+    }
+
+    body.dark .info-box {
+      background: #3a3a3a;
+    }
+  </style>
+</head>
+<footer id="donateFooter">
+  <span>Gratis untuk semua</span>
+  <a href="https://saweria.co/valitio" target="_blank" rel="noopener noreferrer">
+    💝 Dukung via Saweria
+  </a>
+</footer>
+
+<style>
+  #donateFooter {
+    position: fixed;
+    bottom: 0; left: 0;
+    width: 100%;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    color: var(--text);
+    font-size: 0.9rem;
+    text-align: center;
+    padding: 10px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    z-index: 999;
+  }
+  #donateFooter a {
+    color: #f97316;
+    font-weight: 600;
+    text-decoration: none;
+  }
+  #donateFooter a:hover {
+    text-decoration: underline;
+  }
+</style>
+
+<body>
+  <div class="container">
+    <button onclick="toggleMode()" style="margin-bottom:15px;">🌙/☀️ Ganti Mode</button>
+    <h2>Kalkulator Speed Up</h2>
+
+    <div class="form-group">
+      <label>Total waktu:</label>
+      <input type="text" id="totalWaktu" placeholder="contoh: 64d 5h 30m">
+      <small class="note">Catatan: 1d = 24h = 1440m | 1h = 60m</small>
+      <span class="info-icon" onclick="toggleInfo()">ℹ️</span>
+      <div id="infoBox" class="info-box">
+        <b>Cara input:</b>
+        <ul>
+          <li>Gunakan huruf d = hari, h = jam, m = menit</li>
+          <li>Contoh: <code>64d 5h 30m</code></li>
+          <li>Contoh: <code>70d</code></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>Daftar speed up:</label>
+      <input type="text" id="daftarSpeed" placeholder="contoh: 5m,15m,30m,1h,3h,1d,7d">
+      <small class="note">Pisahkan dengan koma, contoh: 5m,30m,1h,1d</small>
+    </div>
+
+    <button onclick="hitung()">Hitung</button>
+
+    <div id="hasil" style="margin-top:20px;"></div>
+  </div>
+
+  <script>
+    // Dark / Light mode toggle
+    function toggleMode() {
+      document.body.classList.toggle("dark");
+      localStorage.setItem("mode", document.body.classList.contains("dark") ? "dark" : "light");
+    }
+
+    // Load saved mode
+    if (localStorage.getItem("mode") === "dark") {
+      document.body.classList.add("dark");
+    }
+
+    // Info toggle
+    function toggleInfo() {
+      const box = document.getElementById("infoBox");
+      box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
+    }
+
+    // Parsing waktu string ke menit
+    function parseWaktu(str) {
+      let total = 0;
+      const regex = /(\d+)([dhm])/g;
+      let match;
+      while ((match = regex.exec(str)) !== null) {
+        let val = parseInt(match[1]);
+        if (match[2] === "d") total += val * 1440;
+        if (match[2] === "h") total += val * 60;
+        if (match[2] === "m") total += val;
+      }
+      return total;
+    }
+
+    // Hitung speed up
+    function hitung() {
+      const totalStr = document.getElementById("totalWaktu").value.trim();
+      const daftarStr = document.getElementById("daftarSpeed").value.trim();
+
+      if (!totalStr || !daftarStr) {
+        alert("Isi semua input!");
+        return;
+      }
+
+      const totalMenit = parseWaktu(totalStr);
+      const daftar = daftarStr.split(",").map(s => s.trim());
+
+      let hasil = `<b>Total waktu:</b> ${totalStr}<br><br>`;
+      hasil += `<b>Hasil jika ditutup dengan speed up tertentu:</b><ul>`;
+
+      daftar.forEach(speed => {
+        const menit = parseWaktu(speed);
+        if (menit > 0) {
+          const jumlah = Math.ceil(totalMenit / menit);
+          hasil += `<li>${jumlah}x Speed Up (${speed})</li>`;
+        }
+      });
+
+      hasil += "</ul>";
+      document.getElementById("hasil").innerHTML = hasil;
+    }
+if ("serviceWorker" in navigator) {
+      navigator.serviceWorker.register("service-worker.js")
+        .then(() => console.log("Service Worker registered"))
+        .catch(err => console.error("SW registration failed:", err));
+    }
+  </script>
+</body>
+</html>
